@@ -1053,7 +1053,7 @@ void obs_source_video_tick(obs_source_t *source, float seconds)
 		source->active = now_active;
 	}
 	
-	if (source->context.data && source->info.video_tick)  // @xp : video_tick åœ¨æ¯ä¸ªæ’ä»¶å¯¹åº”çš„ç»“æž„ä½“ä¸­è¿›è¡Œåˆå§‹åŒ–ï¼Œä¾‹å¦‚window-capture çª—å£æ•èŽ·
+	if (source->context.data && source->info.video_tick)  // @xp : video_tick ÔÚÃ¿¸ö²å¼þ¶ÔÓ¦µÄ½á¹¹ÌåÖÐ½øÐÐ³õÊ¼»¯£¬ÀýÈçwindow-capture ´°¿Ú²¶»ñ
 		source->info.video_tick(source->context.data, seconds);
 
 	source->async_rendered = false;
@@ -1740,7 +1740,7 @@ void obs_source_default_render(obs_source_t *source)
 	}
 	gs_technique_end(tech);
 }
-// @xp : obs_source_main_render è°ƒç”¨info.video_render, ç»ˆäºŽè°ƒç”¨video_render....( ï¼žï¹ï¼œ)ã€‚
+// @xp : obs_source_main_render µ÷ÓÃinfo.video_render, ÖÕÓÚµ÷ÓÃvideo_render....( £¾©n£¼)¡£
 static inline void obs_source_main_render(obs_source_t *source)
 {
 	uint32_t flags      = source->info.output_flags;
@@ -1752,12 +1752,12 @@ static inline void obs_source_main_render(obs_source_t *source)
 	if (default_effect)
 		obs_source_default_render(source);
 	else if (source->context.data)
-		source->info.video_render(source->context.data, // @xp : video_render åœ¨æ’ä»¶ç»“æž„ä½“ä¸­è¿›è¡Œäº†åˆå§‹åŒ–ï¼Œæœ€åŽè°ƒç”¨åˆ°wc_renderï¼Œç„¶åŽæ•°æ®ä¼ é€åˆ° opengl  æˆ–è€…d3dä¸­è¿›è¡Œå¤„ç†ï¼Œæ˜¾ç¤º
+		source->info.video_render(source->context.data, // @xp : video_render ÔÚ²å¼þ½á¹¹ÌåÖÐ½øÐÐÁË³õÊ¼»¯£¬×îºóµ÷ÓÃµ½wc_render£¬È»ºóÊý¾Ý´«ËÍµ½ opengl  »òÕßd3dÖÐ½øÐÐ´¦Àí£¬ÏÔÊ¾
 				custom_draw ? NULL : gs_get_effect());
 }
 
 static bool ready_async_frame(obs_source_t *source, uint64_t sys_time);
-// @xp : render_video ä¸ºäº†æœ€ç»ˆè°ƒç”¨video_renderï¼Œè°ƒç”¨obs_source_main_render
+// @xp : render_video ÎªÁË×îÖÕµ÷ÓÃvideo_render£¬µ÷ÓÃobs_source_main_render
 static inline void render_video(obs_source_t *source)
 {
 	if (source->info.type != OBS_SOURCE_TYPE_FILTER &&
@@ -1785,7 +1785,7 @@ static inline void render_video(obs_source_t *source)
 		obs_source_render_filters(source);
 
 	else if (source->info.video_render)
-		obs_source_main_render(source);   // @xp : obs_source_main_render è°ƒç”¨info.video_render, ç»ˆäºŽè°ƒç”¨video_render....( ï¼žï¹ï¼œ)ã€‚
+		obs_source_main_render(source);   // @xp : obs_source_main_render µ÷ÓÃinfo.video_render, ÖÕÓÚµ÷ÓÃvideo_render....( £¾©n£¼)¡£
 
 	else if (source->filter_target)
 		obs_source_video_render(source->filter_target);
@@ -1796,14 +1796,14 @@ static inline void render_video(obs_source_t *source)
 	else
 		obs_source_render_async_video(source);
 }
-// @xp : obs_source_video_render ä¸ºäº†æœ€ç»ˆè°ƒç”¨video_renderï¼Œè°ƒç”¨render_video
+// @xp : obs_source_video_render ÎªÁË×îÖÕµ÷ÓÃvideo_render£¬µ÷ÓÃrender_video
 void obs_source_video_render(obs_source_t *source)
 {
 	if (!obs_source_valid(source, "obs_source_video_render"))
 		return;
 
 	obs_source_addref(source);
-	render_video(source);  // @xp : render_video ä¸ºäº†æœ€ç»ˆè°ƒç”¨video_renderï¼Œè°ƒç”¨obs_source_main_render
+	render_video(source);  // @xp : render_video ÎªÁË×îÖÕµ÷ÓÃvideo_render£¬µ÷ÓÃobs_source_main_render
 	obs_source_release(source);
 }
 
@@ -2375,7 +2375,7 @@ static inline struct obs_source_frame *cache_video(struct obs_source *source,
 
 	return new_frame;
 }
-// @xp : obs_source_output_videoæ•°æ®é‡‡é›†ï¼Œå°†é‡‡é›†æ•°æ®æ’å…¥åˆ°è§†é¢‘é˜Ÿåˆ—
+// @xp : obs_source_output_videoÊý¾Ý²É¼¯£¬½«²É¼¯Êý¾Ý²åÈëµ½ÊÓÆµ¶ÓÁÐ
 void obs_source_output_video(obs_source_t *source,
 		const struct obs_source_frame *frame)
 {
@@ -2394,7 +2394,7 @@ void obs_source_output_video(obs_source_t *source,
 
 	if (output) {
 		pthread_mutex_lock(&source->async_mutex);
-		da_push_back(source->async_frames, &output); // @xp : source->async_frames è§†é¢‘æ•°æ®é˜Ÿåˆ—
+		da_push_back(source->async_frames, &output); // @xp : source->async_frames ÊÓÆµÊý¾Ý¶ÓÁÐ
 		pthread_mutex_unlock(&source->async_mutex);
 		source->async_active = true;
 	}

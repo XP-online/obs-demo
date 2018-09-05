@@ -24,7 +24,7 @@
 #include "media-io/format-conversion.h"
 #include "media-io/video-frame.h"
 
-// @xp : tick_sources éåŽ†å½“å‰åŠ å…¥çš„æ‰€æœ‰sourceï¼Œè°ƒç”¨obs_source_video_tick
+// @xp : tick_sources ±éÀúµ±Ç°¼ÓÈëµÄËùÓÐsource£¬µ÷ÓÃobs_source_video_tick
 static uint64_t tick_sources(uint64_t cur_time, uint64_t last_time)
 {
 	struct obs_core_data *data = &obs->data;
@@ -56,10 +56,10 @@ static uint64_t tick_sources(uint64_t cur_time, uint64_t last_time)
 	/* call the tick function of each source */
 
 	pthread_mutex_lock(&data->sources_mutex);
-	// @xp : éåŽ†å½“å‰åŠ å…¥çš„æ‰€æœ‰source
+	// @xp : ±éÀúµ±Ç°¼ÓÈëµÄËùÓÐsource
 	source = data->first_source;
 	while (source) {
-		obs_source_video_tick(source, seconds);  // @xp :  obs_source_video_tick æœ€ç»ˆä¼šè°ƒç”¨ å‡½æ•°æŒ‡é’ˆ video_tick 
+		obs_source_video_tick(source, seconds);  // @xp :  obs_source_video_tick ×îÖÕ»áµ÷ÓÃ º¯ÊýÖ¸Õë video_tick 
 		source = (struct obs_source*)source->context.next;
 	}
 
@@ -70,7 +70,7 @@ static uint64_t tick_sources(uint64_t cur_time, uint64_t last_time)
 
 /* in obs-display.c */
 extern void render_display(struct obs_display *display);
-// @xp : render_displays æ•°æ®è¯»å–åˆ°åŽ è¿›è¡Œæ¸²æŸ“
+// @xp : render_displays Êý¾Ý¶ÁÈ¡µ½ºó ½øÐÐäÖÈ¾
 static inline void render_displays(void)
 {
 	struct obs_display *display;
@@ -85,7 +85,7 @@ static inline void render_displays(void)
 
 	display = obs->data.first_display;
 	while (display) {
-		render_display(display);  // @xp : render_display å¯¹è¯»å–çš„æ•°æ®è¿›è¡Œæ¸²æŸ“
+		render_display(display);  // @xp : render_display ¶Ô¶ÁÈ¡µÄÊý¾Ý½øÐÐäÖÈ¾
 		display = display->next;
 	}
 
@@ -112,7 +112,7 @@ static inline void unmap_last_surface(struct obs_core_video *video)
 }
 
 static const char *render_main_texture_name = "render_main_texture";
-// @xp : render_main_texture è°ƒç”¨obs_view_render
+// @xp : render_main_texture µ÷ÓÃobs_view_render
 static inline void render_main_texture(struct obs_core_video *video,
 		int cur_texture)
 {
@@ -138,7 +138,7 @@ static inline void render_main_texture(struct obs_core_video *video,
 
 	pthread_mutex_unlock(&obs->data.draw_callbacks_mutex);
 
-	obs_view_render(&obs->data.main_view);  // @xp : obs_view_render è°ƒç”¨obs_source_video_render
+	obs_view_render(&obs->data.main_view);  // @xp : obs_view_render µ÷ÓÃobs_source_video_render
 
 	video->textures_rendered[cur_texture] = true;
 
@@ -336,7 +336,7 @@ end:
 	profile_end(stage_output_texture_name);
 }
 
-// @xp : render_video è°ƒç”¨render_main_texture	
+// @xp : render_video µ÷ÓÃrender_main_texture	
 static inline void render_video(struct obs_core_video *video, int cur_texture,
 		int prev_texture)
 {
@@ -345,7 +345,7 @@ static inline void render_video(struct obs_core_video *video, int cur_texture,
 	gs_enable_depth_test(false);
 	gs_set_cull_mode(GS_NEITHER);
 	
-	render_main_texture(video, cur_texture);  // @xp : render_main_texture è°ƒç”¨obs_view_render
+	render_main_texture(video, cur_texture);  // @xp : render_main_texture µ÷ÓÃobs_view_render
 	render_output_texture(video, cur_texture, prev_texture);
 	if (video->gpu_conversion)
 		render_convert_texture(video, cur_texture, prev_texture);
@@ -498,7 +498,7 @@ static inline void copy_rgbx_frame(
 		}
 	}
 }
-// @xp : output_video_data è°ƒç”¨video_output_lock_frameï¼Œæ•°æ®æœ€ç»ˆä¿å­˜åœ¨video cacheä¸­
+// @xp : output_video_data µ÷ÓÃvideo_output_lock_frame£¬Êý¾Ý×îÖÕ±£´æÔÚvideo cacheÖÐ
 static inline void output_video_data(struct obs_core_video *video,
 		struct video_data *input_frame, int count)
 {
@@ -508,7 +508,7 @@ static inline void output_video_data(struct obs_core_video *video,
 
 	info = video_output_get_info(video->video);
 
-	locked = video_output_lock_frame(video->video, &output_frame, count,	 // @xp : video_output_lock_frame å‘video->cacheä¸­ä¿å­˜æ•°æ®
+	locked = video_output_lock_frame(video->video, &output_frame, count,	 // @xp : video_output_lock_frame Ïòvideo->cacheÖÐ±£´æÊý¾Ý
 			input_frame->timestamp);
 	if (locked) {
 		if (video->gpu_conversion) {
@@ -524,7 +524,7 @@ static inline void output_video_data(struct obs_core_video *video,
 		video_output_unlock_frame(video->video);
 	}
 }
-// @xp : video_sleep å‘videoä¸­push backæ•°æ®
+// @xp : video_sleep ÏòvideoÖÐpush backÊý¾Ý
 static inline void video_sleep(struct obs_core_video *video,
 		uint64_t *p_time, uint64_t interval_ns)
 {
@@ -546,7 +546,7 @@ static inline void video_sleep(struct obs_core_video *video,
 
 	vframe_info.timestamp = cur_time;
 	vframe_info.count = count;
-	circlebuf_push_back(&video->vframe_info_buffer, &vframe_info,  // @xp : circlebuf_push_back å‘videoä¸­push backæ•°æ®
+	circlebuf_push_back(&video->vframe_info_buffer, &vframe_info,  // @xp : circlebuf_push_back ÏòvideoÖÐpush backÊý¾Ý
 			sizeof(vframe_info));
 }
 
@@ -555,7 +555,7 @@ static const char *output_frame_render_video_name = "render_video";
 static const char *output_frame_download_frame_name = "download_frame";
 static const char *output_frame_gs_flush_name = "gs_flush";
 static const char *output_frame_output_video_data_name = "output_video_data";
-// @xp : output_frame obs_video_threadçº¿ç¨‹é€šè¿‡è°ƒç”¨out_frameèŽ·å–opengl æˆ–è€…d3då¤„ç†åŽçš„æ•°æ®ï¼Œç„¶åŽæŠŠæ•°æ®æ”¾åˆ°ç¼“å†²åŒº
+// @xp : output_frame obs_video_threadÏß³ÌÍ¨¹ýµ÷ÓÃout_frame»ñÈ¡opengl »òÕßd3d´¦ÀíºóµÄÊý¾Ý£¬È»ºó°ÑÊý¾Ý·Åµ½»º³åÇø
 static inline void output_frame(void)
 {
 	struct obs_core_video *video = &obs->video;
@@ -570,11 +570,11 @@ static inline void output_frame(void)
 	gs_enter_context(video->graphics);
 
 	profile_start(output_frame_render_video_name);
-	render_video(video, cur_texture, prev_texture);	// @xp : render_video è°ƒç”¨render_main_texture	
+	render_video(video, cur_texture, prev_texture);	// @xp : render_video µ÷ÓÃrender_main_texture	
 	profile_end(output_frame_render_video_name);
 
 	profile_start(output_frame_download_frame_name);
-	frame_ready = download_frame(video, prev_texture, &frame);// @xp : download_frame èŽ·å¾—æ•°æ®bufferæŒ‡é’ˆ
+	frame_ready = download_frame(video, prev_texture, &frame);// @xp : download_frame »ñµÃÊý¾ÝbufferÖ¸Õë
 	profile_end(output_frame_download_frame_name);
 
 	profile_start(output_frame_gs_flush_name);
@@ -591,7 +591,7 @@ static inline void output_frame(void)
 
 		frame.timestamp = vframe_info.timestamp;
 		profile_start(output_frame_output_video_data_name);
-		output_video_data(video, &frame, vframe_info.count);	// @xp : output_video_data è°ƒç”¨video_output_lock_frameï¼Œæ•°æ®æœ€ç»ˆä¿å­˜åœ¨video cacheä¸­
+		output_video_data(video, &frame, vframe_info.count);	// @xp : output_video_data µ÷ÓÃvideo_output_lock_frame£¬Êý¾Ý×îÖÕ±£´æÔÚvideo cacheÖÐ
 		profile_end(output_frame_output_video_data_name);
 	}
 
@@ -604,7 +604,7 @@ static inline void output_frame(void)
 static const char *tick_sources_name = "tick_sources";
 static const char *render_displays_name = "render_displays";
 static const char *output_frame_name = "output_frame";
-// @xp : åœ¨obs_video_threadçº¿ç¨‹ä¸­ è¿›è¡Œ æ•°æ®é‡‡é›† ï¼Œæ¸²æŸ“ ã€ä¿å­˜æ•°æ®åˆ° ç¼“å†²åŒº
+// @xp : ÔÚobs_video_threadÏß³ÌÖÐ ½øÐÐ Êý¾Ý²É¼¯ £¬äÖÈ¾ ¡¢±£´æÊý¾Ýµ½ »º³åÇø
 void *obs_graphics_thread(void *param)
 {
 	uint64_t last_time = 0;
@@ -631,15 +631,15 @@ void *obs_graphics_thread(void *param)
 		profile_start(video_thread_name);
 
 		profile_start(tick_sources_name);
-		last_time = tick_sources(obs->video.video_time, last_time);  // @xp : tick_sources éåŽ†å½“å‰åŠ å…¥çš„æ‰€æœ‰sourceï¼Œè°ƒç”¨obs_source_video_tick
+		last_time = tick_sources(obs->video.video_time, last_time);  // @xp : tick_sources ±éÀúµ±Ç°¼ÓÈëµÄËùÓÐsource£¬µ÷ÓÃobs_source_video_tick
 		profile_end(tick_sources_name);
 
 		profile_start(output_frame_name);
-		output_frame();  // @xp : output_frame obs_video_threadçº¿ç¨‹é€šè¿‡è°ƒç”¨out_frameèŽ·å–opengl æˆ–è€…d3då¤„ç†åŽçš„æ•°æ®ï¼Œç„¶åŽæŠŠæ•°æ®æ”¾åˆ°ç¼“å†²åŒº
+		output_frame();  // @xp : output_frame obs_video_threadÏß³ÌÍ¨¹ýµ÷ÓÃout_frame»ñÈ¡opengl »òÕßd3d´¦ÀíºóµÄÊý¾Ý£¬È»ºó°ÑÊý¾Ý·Åµ½»º³åÇø
 		profile_end(output_frame_name);
 
 		profile_start(render_displays_name);
-		render_displays();  // @xp : render_displays æ•°æ®è¯»å–åˆ°åŽï¼Œè¿›è¡Œæ¸²æŸ“
+		render_displays();  // @xp : render_displays Êý¾Ý¶ÁÈ¡µ½ºó£¬½øÐÐäÖÈ¾
 		profile_end(render_displays_name);
 
 		frame_time_ns = os_gettime_ns() - frame_start;
@@ -648,7 +648,7 @@ void *obs_graphics_thread(void *param)
 
 		profile_reenable_thread();
 
-		video_sleep(&obs->video, &obs->video.video_time, interval);	// @xp : video_sleep å‘videoä¸­push backæ•°æ®
+		video_sleep(&obs->video, &obs->video.video_time, interval);	// @xp : video_sleep ÏòvideoÖÐpush backÊý¾Ý
 
 		frame_time_total_ns += frame_time_ns;
 		fps_total_ns += (obs->video.video_time - last_time);
