@@ -948,7 +948,7 @@ int obs_reset_video(struct obs_video_info *ovi)
 	ovi->output_height &= 0xFFFFFFFE;
 
 	if (!video->graphics) {
-		int errorcode = obs_init_graphics(ovi);
+		int errorcode = obs_init_graphics(ovi);	//@xp ：加载d3d插件
 		if (errorcode != OBS_VIDEO_SUCCESS) {
 			obs_free_graphics();
 			return errorcode;
