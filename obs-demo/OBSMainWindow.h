@@ -5,9 +5,19 @@
 #include <QMessageBox>
 #include "ui_OBSMainWindow.h"
 
+
 #include "obs.h"
 #include "util/util.hpp"
 
+#ifdef __APPLE__
+#define INPUT_AUDIO_SOURCE  "coreaudio_input_capture"
+#define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
+#define FFMPEG_SOURCE "display_capture"
+#elif _WIN32
+#define INPUT_AUDIO_SOURCE  "wasapi_input_capture"
+#define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
+#define FFMPEG_SOURCE "ffmpeg_source"
+#endif
 struct video_quality
 {
 	uint32_t fps_num;       /**< Output FPS numerator */
@@ -39,6 +49,12 @@ public:
 	bool ResetAudio();
 
 	int ResetVidio();
+
+	void PlayVideo();
+
+	void DrawBackdrop(float cx, float cy);
+
+	static void DrawMainPreview(void *data, uint32_t cx, uint32_t cy);	//绘制预览窗口的回调函数
 
 private:
 	Ui::OBSMainWindowClass ui;

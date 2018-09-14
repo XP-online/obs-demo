@@ -83,6 +83,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\Project\OBS\obs-demo\deps\jansson\include;D:\Project\OBS\obs-demo\deps\jansson\private_include;D:\Project\OBS\obs-demo\deps\jansson\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;UNICODE;_UNICODE;_CRT_NONSTDC_NO_WARNINGS;JANSSON_USING_CMAKE;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CompileAs>Default</CompileAs>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

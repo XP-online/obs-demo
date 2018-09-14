@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OBSMainWindow.cpp" />
+    <ClCompile Include="OBSQTDisplay.cpp" />
     <ClCompile Include="precompile.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
@@ -141,6 +142,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="OBSQTDisplay.h" />
     <ClInclude Include="precompile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

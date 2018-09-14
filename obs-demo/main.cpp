@@ -1,4 +1,4 @@
-#include "precompile.h"
+﻿#include "precompile.h"
 #include "OBSMainWindow.h"
 #include <QtWidgets/QApplication>
 
@@ -8,5 +8,6 @@ int main(int argc, char *argv[])
 	OBSMainWindow w;
 	w.OBSInit();
 	w.show();
+	w.PlayVideo();
 	return a.exec();
 }

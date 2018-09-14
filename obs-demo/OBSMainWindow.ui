@@ -14,17 +14,17 @@
    <string>OBSMainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="widget" native="true">
+   <widget class="OBSQTDisplay" name="preview" native="true">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>190</y>
+      <x>40</x>
+      <y>40</y>
       <width>551</width>
       <height>371</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: rgb(170, 255, 127);</string>
+     <string notr="true"/>
     </property>
    </widget>
   </widget>
@@ -49,6 +49,14 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>OBSQTDisplay</class>
+   <extends>QWidget</extends>
+   <header>OBSQTDisplay.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="OBSMainWindow.qrc"/>
  </resources>
