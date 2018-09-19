@@ -76,10 +76,10 @@ bool obs_module_load(void)
 
 	obs_enter_graphics();
 
-	if (win8_or_above && gs_get_device_type() == GS_DEVICE_DIRECT3D_11)
+	//if (win8_or_above && gs_get_device_type() == GS_DEVICE_DIRECT3D_11)
 		obs_register_source(&duplicator_capture_info);
-	else
-		obs_register_source(&monitor_capture_info);
+	//else
+	//	obs_register_source(&monitor_capture_info);
 
 	obs_leave_graphics();
 

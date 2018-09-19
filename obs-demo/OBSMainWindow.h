@@ -14,9 +14,11 @@
 #define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
 #define FFMPEG_SOURCE "display_capture"
 #elif _WIN32
-#define INPUT_AUDIO_SOURCE  "wasapi_input_capture"
-#define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
-#define FFMPEG_SOURCE "ffmpeg_source"
+constexpr auto INPUT_AUDIO_SOURCE = "wasapi_input_capture";
+constexpr auto OUTPUT_AUDIO_SOURCE = "wasapi_output_capture";
+constexpr auto FFMPEG_SOURCE = "ffmpeg_source";
+constexpr auto WINDOW_CAPTURE = "window_capture";
+constexpr auto MONITOR_CAPTURE = "monitor_capture";
 #endif
 struct video_quality
 {
@@ -50,7 +52,9 @@ public:
 
 	int ResetVidio();
 
-	void PlayVideo();
+	void PlayVideo(QString filePath);
+
+	void CaptureWindow();
 
 	void DrawBackdrop(float cx, float cy);
 

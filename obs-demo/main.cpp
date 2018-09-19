@@ -8,6 +8,6 @@ int main(int argc, char *argv[])
 	OBSMainWindow w;
 	w.OBSInit();
 	w.show();
-	w.PlayVideo();
+	w.PlayVideo("D:\\boy.mp4");
 	return a.exec();
 }

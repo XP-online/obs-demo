@@ -92,19 +92,42 @@ void add_source_callback(void* data, obs_scene_t* scene)
 	set_sceneitem_size(sceneitem);
 }
 //添加视频源
-void AddVideoSource(const char *id) {
-	obs_source* source = obs_get_source_by_name(id);
+void AddVideoSource(QString filePath) {
+	obs_source* source = obs_get_source_by_name(FFMPEG_SOURCE);
 	if (!source) {
-		OBSData settings = obs_get_source_defaults("ffmpeg_source");
+		OBSData settings = obs_get_source_defaults(FFMPEG_SOURCE);
 		obs_data_set_bool(settings, "is_local_file", true);
-		obs_data_set_string(settings, "local_file", "D:\\boy.mp4");
-		OBSSource source = obs_source_create("ffmpeg_source", String("视频文件").toUtf8(), settings, nullptr);
+		obs_data_set_string(settings, "local_file", filePath.toUtf8());
+		OBSSource obsSource = obs_source_create(FFMPEG_SOURCE, String("预览窗口").toUtf8(), settings, nullptr);
 		obs_source* scene_source = obs_get_source_by_name("default_sence");
 		obs_scene* scene = obs_scene_from_source(scene_source);
-		obs_scene_atomic_update(scene, add_source_callback, source);
+		obs_scene_atomic_update(scene, add_source_callback, obsSource);
 	} else {
 		obs_source_release(source);
 	}
+}
+//添加录屏源
+void AddCaptureSource() {
+
+	OBSSource source = obs_source_create(MONITOR_CAPTURE, String("预览窗口").toUtf8(), nullptr, nullptr);
+	//创建窗口捕捉资源
+	if (source) {
+		//添加到指定场景中
+		obs_source* scene_source = obs_get_source_by_name("default_sence");
+		obs_scene* scene = obs_scene_from_source(scene_source);
+		obs_sceneitem_t *sceneitem = obs_scene_add(scene, source);
+		obs_sceneitem_set_visible(sceneitem, true);
+		//通过source获取属性
+		OBSData settings = obs_source_get_settings(source);
+		//obs_data_set_bool(settings, "compatibility", true);
+		obs_data_set_bool(settings, "capture_cursor", true);
+		//更新设置，只有更新，底层才会生效
+		obs_source_update(source, settings);
+
+		//obs_properties_t *ppts = obs_get_source_properties(MONITOR_CAPTURE);
+		obs_scene_atomic_update(scene, add_source_callback, source);
+	}
+	
 }
 OBSMainWindow::OBSMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -191,12 +214,18 @@ int OBSMainWindow::ResetVidio()
 	return ret;
 }
 
-void OBSMainWindow::PlayVideo()
+void OBSMainWindow::PlayVideo(QString filePath/*= ""*/)
 {
 	//添加视频源
-	//ui.preview->installEventFilter(this);
-	AddVideoSource(FFMPEG_SOURCE);
+	//AddVideoSource(filePath);
+	//添加录屏源
+	AddCaptureSource();
 	obs_display_add_draw_callback(ui.preview->GetDisplay(), OBSMainWindow::DrawMainPreview, this);
+}
+
+void OBSMainWindow::CaptureWindow()
+{
+
 }
 
 void OBSMainWindow::DrawBackdrop(float cx, float cy)
