@@ -108,24 +108,38 @@ void AddVideoSource(QString filePath) {
 }
 //添加录屏源
 void AddCaptureSource() {
-
+	//创建屏幕捕捉资源
 	OBSSource source = obs_source_create(MONITOR_CAPTURE, String("预览窗口").toUtf8(), nullptr, nullptr);
-	//创建窗口捕捉资源
+	
 	if (source) {
 		//添加到指定场景中
 		obs_source* scene_source = obs_get_source_by_name("default_sence");
 		obs_scene* scene = obs_scene_from_source(scene_source);
 		obs_sceneitem_t *sceneitem = obs_scene_add(scene, source);
 		obs_sceneitem_set_visible(sceneitem, true);
+		//设置源的尺寸
+		obs_video_info ovi;
+		obs_get_video_info(&ovi);
+
+		obs_transform_info itemInfo;
+		vec2_set(&itemInfo.pos, 400.0f, 0.0f);
+		vec2_set(&itemInfo.scale, 1.0f, 1.0f);
+		itemInfo.rot = 0.0f;
+
+		vec2_set(&itemInfo.bounds, /*float(ovi.base_width)*/400.0, 300.0);
+		itemInfo.bounds_type = OBS_BOUNDS_SCALE_INNER;
+		itemInfo.alignment = OBS_ALIGN_LEFT | OBS_ALIGN_TOP;
+		//itemInfo.bounds_alignment = OBS_ALIGN_CENTER;
+		obs_sceneitem_set_info(sceneitem, &itemInfo);
+		//设置源的尺寸自动缩放
+		//set_sceneitem_size(sceneitem);
 		//通过source获取属性
 		OBSData settings = obs_source_get_settings(source);
 		//obs_data_set_bool(settings, "compatibility", true);
 		obs_data_set_bool(settings, "capture_cursor", true);
 		//更新设置，只有更新，底层才会生效
 		obs_source_update(source, settings);
-
-		//obs_properties_t *ppts = obs_get_source_properties(MONITOR_CAPTURE);
-		obs_scene_atomic_update(scene, add_source_callback, source);
+		//obs_scene_atomic_update(scene, add_source_callback, source);
 	}
 	
 }
@@ -217,15 +231,66 @@ int OBSMainWindow::ResetVidio()
 void OBSMainWindow::PlayVideo(QString filePath/*= ""*/)
 {
 	//添加视频源
-	//AddVideoSource(filePath);
+	AddVideoSource(filePath);
 	//添加录屏源
 	AddCaptureSource();
 	obs_display_add_draw_callback(ui.preview->GetDisplay(), OBSMainWindow::DrawMainPreview, this);
+	//开始推流
+	StartStreaming("rtmp://127.0.0.1/live", "tuiliu");
 }
 
-void OBSMainWindow::CaptureWindow()
+void OBSMainWindow::StartStreaming(QString stream_url, QString stream_key)
 {
+	//添加rtmp-service源设置推流地址
+	
+	OBSOutput streamOutput = obs_output_create("rtmp_output", "simple_stream", nullptr, nullptr);
+	if (streamOutput)
+	{
+		obs_output_release(streamOutput);
+	//	obs_output_update(streamOutput, settings);
+	}
+	obs_source_t* source = obs_get_source_by_name(RTMP_COMMON);
+	OBSData settings = obs_source_get_settings(source);
+	obs_data_set_string(settings, "service", stream_url.toUtf8());
+	obs_data_set_string(settings, "key", stream_key.toUtf8());
+	//设置编码器
+	OBSEncoder vencoder = obs_video_encoder_create("obs_x264",
+		"simple_h264_stream", nullptr, nullptr);
+	OBSEncoder aencoder = obs_audio_encoder_create("ffmpeg_aac",
+		"simple_aac", nullptr, 0, nullptr);
+	OBSService service = obs_service_create(RTMP_COMMON,
+		"default_service", settings, nullptr);
+	obs_encoder_release(vencoder);
+	obs_encoder_release(aencoder);
+	obs_service_release(service);
 
+	OBSData h264Settings = obs_data_create();
+	OBSData aacSettings = obs_data_create();
+
+	obs_data_set_int(h264Settings, "bitrate", viedo_quality_levels[2].video_bitrate);
+	obs_data_set_int(h264Settings, "keyint_sec", 5);
+	obs_data_set_string(h264Settings, "preset", "veryfast");
+
+	//obs_data_set_string(h264Settings, "target_usage", "quality");
+	//obs_data_set_string(h264Settings, "rate_control", "VBR");
+
+	obs_data_set_bool(h264Settings, "cbr", false);//固定码率
+	obs_data_set_bool(h264Settings, "vfr", true);//动态码率
+	obs_data_set_bool(h264Settings, "use_bufsize", true);
+	obs_data_set_int(h264Settings, "crf", 23);//画质质量，0-51,0无损 51最次 默认值23， 通常取值范围：[18-28] 每+6，比特率减半  每-6，比特率翻倍
+
+	obs_data_set_bool(aacSettings, "cbr", true);
+	obs_data_set_int(aacSettings, "bitrate", 96);
+
+	obs_encoder_update(vencoder, h264Settings);
+	obs_encoder_update(aencoder, aacSettings);
+
+	obs_encoder_set_video(vencoder, obs_get_video());
+	obs_encoder_set_audio(aencoder, obs_get_audio());
+
+	obs_output_set_video_encoder(streamOutput, vencoder);
+	obs_output_set_audio_encoder(streamOutput, aencoder, 0);
+	bool isture = obs_output_start(streamOutput);
 }
 
 void OBSMainWindow::DrawBackdrop(float cx, float cy)
@@ -259,64 +324,6 @@ void OBSMainWindow::DrawBackdrop(float cx, float cy)
 
 void OBSMainWindow::DrawMainPreview(void *data, uint32_t cx, uint32_t cy)
 {
-	//obs_video_info ovi;
-	//obs_get_video_info(&ovi);
-
-	//gs_viewport_push();
-	//gs_projection_push();
-
-	///* --------------------------------------- */
-
-	//QSize previewSize(cx, cy);
-
-	//gs_ortho(0.0f, float(ovi.base_width), 0.0f, float(ovi.base_height), -100.0f, 100.0f);
-	//gs_set_viewport(0, 0, previewSize.width(), previewSize.height());
-
-	//gs_effect_t *solid = obs_get_base_effect(OBS_EFFECT_SOLID);
-	//gs_eparam_t *color = gs_effect_get_param_by_name(solid, "color");
-	//gs_technique_t *tech = gs_effect_get_technique(solid, "Solid");
-
-	////begin draw background
-	//gs_technique_begin(tech);
-	//gs_technique_begin_pass(tech, 0);
-	//gs_matrix_push();
-
-	//gs_matrix_identity();
-	//gs_matrix_scale3f(viedo_quality_levels[2].output_width, viedo_quality_levels[2].output_height, 1.0f);
-
-	//vec4 backgroundColorVal;
-	////vec4_set(&backgroundColorVal, 0.1678f, 0.1678f, 0.1678f, 1.0f);
-	//vec4_set(&backgroundColorVal, 0.0f, 0.0f, 0.0f, 1.0f);
-	//gs_effect_set_vec4(color, &backgroundColorVal);
-
-	////gs_load_vertexbuffer(obsApp->mBox);
-	//gs_draw(GS_TRISTRIP, 0, 0);
-	////end draw background
-
-	//gs_matrix_pop();
-	//gs_technique_end_pass(tech);
-	//gs_technique_end(tech);
-
-	////end draw background
-
-	//gs_set_viewport(0, 0, previewSize.width(), previewSize.height());
-
-	//gs_load_vertexbuffer(nullptr);
-	//obs_render_main_view();
-	//gs_load_vertexbuffer(nullptr);
-
-	///* --------------------------------------- */
-	//gs_matrix_push();
-	//gs_matrix_translate3f(0, 0, 0);
-
-	//gs_ortho(0, previewSize.width(), 0, previewSize.height(), -100.0f, 100.0f);
-	//gs_reset_viewport();
-
-	//gs_matrix_pop();
-
-	///* --------------------------------------- */
-
-	//gs_projection_pop();
 	OBSMainWindow *window = static_cast<OBSMainWindow*>(data);
 	obs_video_info ovi;
 

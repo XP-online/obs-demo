@@ -19,6 +19,7 @@ constexpr auto OUTPUT_AUDIO_SOURCE = "wasapi_output_capture";
 constexpr auto FFMPEG_SOURCE = "ffmpeg_source";
 constexpr auto WINDOW_CAPTURE = "window_capture";
 constexpr auto MONITOR_CAPTURE = "monitor_capture";
+constexpr auto RTMP_COMMON = "rtmp_common";
 #endif
 struct video_quality
 {
@@ -54,7 +55,7 @@ public:
 
 	void PlayVideo(QString filePath);
 
-	void CaptureWindow();
+	void StartStreaming(QString stream_url, QString stream_key);
 
 	void DrawBackdrop(float cx, float cy);
 
