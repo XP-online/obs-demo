@@ -233,13 +233,13 @@ void OBSMainWindow::PlayVideo(QString filePath/*= ""*/)
 	//添加视频源
 	AddVideoSource(filePath);
 	//添加录屏源
-	AddCaptureSource();
+	//AddCaptureSource();
 	obs_display_add_draw_callback(ui.preview->GetDisplay(), OBSMainWindow::DrawMainPreview, this);
-	//开始推流
-	StartStreaming("rtmp://127.0.0.1/live", "tuiliu");
+	//开始推流	   "rtmp://192.168.3.33:1935/live"
+	StartStreaming("rtmp://192.168.3.33:1935/live", "tuiliu");
 }
 
-void OBSMainWindow::StartStreaming(QString stream_url, QString stream_key)
+void OBSMainWindow::StartStreaming(QString url, QString key)
 {
 	//添加rtmp-service源设置推流地址
 	
@@ -249,23 +249,31 @@ void OBSMainWindow::StartStreaming(QString stream_url, QString stream_key)
 		obs_output_release(streamOutput);
 	//	obs_output_update(streamOutput, settings);
 	}
-	obs_source_t* source = obs_get_source_by_name(RTMP_COMMON);
-	OBSData settings = obs_source_get_settings(source);
-	obs_data_set_string(settings, "service", stream_url.toUtf8());
-	obs_data_set_string(settings, "key", stream_key.toUtf8());
+	OBSData settings = obs_data_create();
+
+	obs_data_set_string(settings, "server", url.toUtf8());
+	obs_data_set_string(settings, "key", key.toUtf8());
 	//设置编码器
 	OBSEncoder vencoder = obs_video_encoder_create("obs_x264",
 		"simple_h264_stream", nullptr, nullptr);
 	OBSEncoder aencoder = obs_audio_encoder_create("ffmpeg_aac",
 		"simple_aac", nullptr, 0, nullptr);
-	OBSService service = obs_service_create(RTMP_COMMON,
+	OBSService service = obs_service_create(RTMP_CUSTOM,
 		"default_service", settings, nullptr);
+
+	obs_output_set_video_encoder(streamOutput, vencoder);
+	obs_output_set_audio_encoder(streamOutput, aencoder, 0);
+	obs_output_set_service(streamOutput, service);
+
 	obs_encoder_release(vencoder);
 	obs_encoder_release(aencoder);
 	obs_service_release(service);
 
 	OBSData h264Settings = obs_data_create();
 	OBSData aacSettings = obs_data_create();
+	
+	obs_data_release(h264Settings);
+	obs_data_release(aacSettings);
 
 	obs_data_set_int(h264Settings, "bitrate", viedo_quality_levels[2].video_bitrate);
 	obs_data_set_int(h264Settings, "keyint_sec", 5);
@@ -288,9 +296,29 @@ void OBSMainWindow::StartStreaming(QString stream_url, QString stream_key)
 	obs_encoder_set_video(vencoder, obs_get_video());
 	obs_encoder_set_audio(aencoder, obs_get_audio());
 
-	obs_output_set_video_encoder(streamOutput, vencoder);
-	obs_output_set_audio_encoder(streamOutput, aencoder, 0);
+	video_t *video = obs_get_video();
+	enum video_format format = video_output_get_format(video);
+
+	if (format != VIDEO_FORMAT_NV12 && format != VIDEO_FORMAT_I420)
+		obs_encoder_set_preferred_video_format(vencoder, VIDEO_FORMAT_NV12);
+
+	obs_data_t *outputSettings = obs_data_create();
+	obs_data_set_string(outputSettings, "bind_ip", "default");
+	obs_data_set_bool(outputSettings, "new_socket_loop_enabled",
+		false);
+	obs_data_set_bool(outputSettings, "low_latency_mode_enabled",
+		false);
+	obs_output_update(streamOutput, outputSettings);
+	//obs_data_release(outputSettings);
+
+	int retryDelay = 5;
+	int maxRetries = 10000;
+
+	obs_output_set_reconnect_settings(streamOutput, maxRetries, retryDelay);
+
+	obs_output_set_delay(streamOutput, 0, OBS_OUTPUT_DELAY_PRESERVE);
 	bool isture = obs_output_start(streamOutput);
+	bool n = isture;
 }
 
 void OBSMainWindow::DrawBackdrop(float cx, float cy)

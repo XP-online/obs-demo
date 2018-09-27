@@ -20,6 +20,7 @@ constexpr auto FFMPEG_SOURCE = "ffmpeg_source";
 constexpr auto WINDOW_CAPTURE = "window_capture";
 constexpr auto MONITOR_CAPTURE = "monitor_capture";
 constexpr auto RTMP_COMMON = "rtmp_common";
+constexpr auto RTMP_CUSTOM = "rtmp_custom";
 #endif
 struct video_quality
 {
